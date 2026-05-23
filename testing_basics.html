@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="ro" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Academy - Introducere în Testare Software</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS with Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f4f5ff',
+                            100: '#e9ebff',
+                            200: '#d5daff',
+                            300: '#b4bcff',
+                            400: '#8c95ff',
+                            500: '#6366f1', // Indigo-500
+                            600: '#4f46e5', // Indigo-600
+                            700: '#4338ca', // Indigo-700
+                            800: '#3730a3',
+                        },
+                        darkbg: '#090d16',
+                        darkcard: '#111827',
+                        darkborder: '#1f2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #374151;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Glassmorphism custom classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+        }
+        .sidebar-link.active {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
+        }
+        .content-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease-out;
+        }
+        .content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Timeline connectors */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 24px;
+            bottom: -24px;
+            width: 2px;
+            background: linear-gradient(to bottom, #6366f1 0%, #a78bfa 100%);
+        }
+        .timeline-line-last::before {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Reading Progress Bar -->
+    <div class="fixed top-0 left-0 w-full h-1 z-50 bg-slate-100 dark:bg-slate-800">
+        <div id="reading-progress" class="h-full bg-gradient-to-r from-brand-500 via-purple-500 to-pink-500 w-0 transition-all duration-300"></div>
+    </div>
+
+    <!-- Mobile Header -->
+    <header class="fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-darkcard/80 backdrop-blur-md border-b border-slate-100 dark:border-darkborder flex items-center justify-between px-6 z-40 md:hidden">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-brand-500/20">
+                QA
+            </div>
+            <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-brand-500 to-indigo-600 bg-clip-text text-transparent">QA Academy</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <i class="fas fa-sun dark:hidden"></i>
+                <i class="fas fa-moon hidden dark:block text-amber-400"></i>
+            </button>
+            <button onclick="toggleMobileMenu()" class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="mobile-drawer-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300 md:hidden" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Drawer Sidebar -->
+    <aside id="mobile-drawer" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-darkcard z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden flex flex-col border-r border-slate-100 dark:border-darkborder p-6">
+        <div class="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-darkborder">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-brand-500/20">
+                    QA
+                </div>
+                <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-brand-500 to-indigo-600 bg-clip-text text-transparent">QA Academy</span>
+            </div>
+            <button onclick="toggleMobileMenu()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+        <nav class="flex-1 py-6 space-y-2 overflow-y-auto">
+            <button onclick="showSection('intro')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3 active font-medium">
+                <i class="fas fa-info-circle text-lg"></i> Ce este testarea?
+            </button>
+            <button onclick="showSection('importance')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3 font-medium">
+                <i class="fas fa-shield-alt text-lg"></i> Importanța testării
+            </button>
+            <button onclick="showSection('sdlc')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3 font-medium">
+                <i class="fas fa-sync text-lg"></i> SDLC
+            </button>
+            <button onclick="showSection('stlc')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3 font-medium">
+                <i class="fas fa-vial text-lg"></i> STLC
+            </button>
+            <button onclick="showSection('comparison')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3 font-medium">
+                <i class="fas fa-balance-scale text-lg"></i> SDLC vs STLC
+            </button>
+            <button onclick="showSection('principles')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3 font-medium">
+                <i class="fas fa-list-ol text-lg"></i> Cele 7 Principii
+            </button>
+            <div class="pt-4 mt-4 border-t border-slate-100 dark:border-darkborder">
+                <button onclick="showSection('quiz')" class="sidebar-link w-full text-left p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/20 flex items-center gap-3 font-semibold">
+                    <i class="fas fa-tasks text-lg"></i> Quiz Evaluare
+                </button>
+            </div>
+        </nav>
+    </aside>
+
+    <div class="flex flex-1 min-h-screen">
+        <!-- Desktop Sidebar Navigation -->
+        <aside class="w-72 bg-white dark:bg-darkcard border-r border-slate-100 dark:border-darkborder hidden md:flex flex-col sticky top-0 h-screen z-30">
+            <div class="p-6 border-b border-slate-100 dark:border-darkborder">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-brand-500/20">
+                        QA
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-brand-500 to-indigo-600 bg-clip-text text-transparent leading-none">QA Academy</span>
+                        <span class="text-xs font-semibold text-slate-400 mt-1">Platformă educațională</span>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 p-6 space-y-2.5 overflow-y-auto">
+                <button onclick="showSection('intro')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center gap-3 active font-medium">
+                    <i class="fas fa-info-circle text-lg"></i> Ce este testarea?
+                </button>
+                <button onclick="showSection('importance')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center gap-3 font-medium">
+                    <i class="fas fa-shield-alt text-lg"></i> Importanța testării
+                </button>
+                <button onclick="showSection('sdlc')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center gap-3 font-medium">
+                    <i class="fas fa-sync text-lg"></i> SDLC
+                </button>
+                <button onclick="showSection('stlc')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center gap-3 font-medium">
+                    <i class="fas fa-vial text-lg"></i> STLC
+                </button>
+                <button onclick="showSection('comparison')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center gap-3 font-medium">
+                    <i class="fas fa-balance-scale text-lg"></i> SDLC vs STLC
+                </button>
+                <button onclick="showSection('principles')" class="sidebar-link w-full text-left p-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center gap-3 font-medium">
+                    <i class="fas fa-list-ol text-lg"></i> Cele 7 Principii
+                </button>
+                <div class="pt-4 mt-4 border-t border-slate-100 dark:border-darkborder">
+                    <button onclick="showSection('quiz')" class="sidebar-link w-full text-left p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/20 flex items-center gap-3 font-bold transition-all shadow-sm">
+                        <i class="fas fa-tasks text-lg"></i> Quiz Evaluare
+                    </button>
+                </div>
+            </nav>
+
+            <div class="p-6 border-t border-slate-100 dark:border-darkborder flex flex-col gap-4">
+                <!-- Theme Toggle Button Desktop -->
+                <button onclick="toggleDarkMode()" class="w-full py-3 px-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/50 flex items-center justify-center gap-3 text-slate-600 dark:text-slate-300 font-semibold transition-all shadow-sm">
+                    <i class="fas fa-sun dark:hidden text-brand-500"></i>
+                    <i class="fas fa-moon hidden dark:block text-amber-400"></i>
+                    <span class="text-sm dark:hidden">Mod Întunecat</span>
+                    <span class="text-sm hidden dark:block">Mod Luminos</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 pt-24 md:pt-10 p-6 md:p-12 max-w-5xl mx-auto space-y-12 w-full overflow-x-hidden">
+            
+            <!-- Section: Introducere -->
+            <section id="intro" class="content-section active space-y-8">
+                <div class="space-y-3">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                        Ce este testarea software?
+                    </h2>
+                    <div class="w-20 h-1.5 bg-gradient-to-r from-brand-500 to-indigo-600 rounded-full"></div>
+                </div>
+                
+                <div class="bg-white dark:bg-darkcard p-6 md:p-8 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm leading-relaxed relative overflow-hidden group">
+                    <div class="absolute -right-16 -top-16 w-36 h-36 bg-brand-500/5 rounded-full blur-2xl group-hover:bg-brand-500/10 transition-all"></div>
+                    <p class="mb-5 text-base md:text-lg text-slate-600 dark:text-slate-300 font-medium">
+                        Testarea software este procesul de evaluare a unei aplicații software cu scopul de a identifica diferențele dintre cerințele date și comportamentul real al aplicației, asigurând totodată că produsul final este lipsit de defecte critice.
+                    </p>
+                    <div class="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-brand-500 rounded-r-xl">
+                        <p class="font-bold text-brand-600 dark:text-brand-400 italic text-base">
+                            "Testarea nu demonstrează absența bug-urilor, ci prezența lor."
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-6 bg-brand-50/50 dark:bg-slate-800/30 rounded-2xl border border-brand-100/50 dark:border-slate-700/50 relative overflow-hidden">
+                        <div class="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-4 shadow-sm">
+                            <i class="fas fa-bullseye text-lg"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-3">Obiective principale:</h4>
+                        <ul class="space-y-2.5 text-sm md:text-base text-slate-600 dark:text-slate-300">
+                            <li class="flex items-center gap-2.5">
+                                <i class="fas fa-check-circle text-brand-500"></i> Identificarea defectelor cât mai devreme.
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fas fa-check-circle text-brand-500"></i> Creșterea calității și performanței produsului.
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fas fa-check-circle text-brand-500"></i> Verificarea îndeplinirii cerințelor de business.
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fas fa-check-circle text-brand-500"></i> Reducerea substanțială a costurilor de mentenanță.
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="p-6 bg-amber-50/40 dark:bg-amber-950/10 rounded-2xl border border-amber-100/50 dark:border-amber-950/20">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4 shadow-sm">
+                            <i class="fas fa-exclamation-triangle text-lg"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-3 font-display">De ce este indispensabilă?</h4>
+                        <p class="text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Fără un proces de testare bine organizat, erorile de cod scapă în producție și pot cauza pierderi financiare masive, compromiterea totală a datelor sau chiar pericole reale în cazul sistemelor din domenii medicale sau aviatice.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Footer Next Section Flow Button -->
+                <div class="flex justify-end pt-8 border-t border-slate-100 dark:border-darkborder">
+                    <button onclick="showSection('importance')" class="next-section-btn px-6 py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold flex items-center gap-2.5 group transition-all shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30">
+                        Pasul Următor: Importanța Testării <i class="fas fa-arrow-right group-hover:translate-x-1.5 transition-transform"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section: Importanța Testării -->
+            <section id="importance" class="content-section space-y-8">
+                <div class="space-y-3">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                        De ce este importantă testarea?
+                    </h2>
+                    <div class="w-20 h-1.5 bg-gradient-to-r from-brand-500 to-indigo-600 rounded-full"></div>
+                </div>
+                
+                <p class="text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl">
+                    Testarea nu reprezintă o etapă opțională, ci o necesitate critică în dezvoltarea oricărui produs digital modern care dorește să aibă succes pe piață.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:scale-[1.01] transition-all duration-300">
+                        <div class="w-11 h-11 bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 rounded-xl flex items-center justify-center mb-4 text-xl shadow-sm">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Reducerea Costurilor</h4>
+                        <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Identificarea unui defect în fazele incipiente de planificare sau design este de zeci de ori mai ieftină decât repararea lui după ce aplicația a fost deja lansată pe piață.
+                        </p>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:scale-[1.01] transition-all duration-300">
+                        <div class="w-11 h-11 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center mb-4 text-xl shadow-sm">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Securitatea Datelor</h4>
+                        <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Testarea riguroasă de securitate garantează că informațiile sensibile ale utilizatorilor (parole, date bancare) sunt complet protejate împotriva atacurilor cibernetice.
+                        </p>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:scale-[1.01] transition-all duration-300">
+                        <div class="w-11 h-11 bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center mb-4 text-xl shadow-sm">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Satisfacția Utilizatorului</h4>
+                        <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                            O aplicație stabilă, fluidă și ușor de utilizat îmbunătățește considerabil încrederea clienților și crește rata de retenție a acestora în platformă.
+                        </p>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:scale-[1.01] transition-all duration-300">
+                        <div class="w-11 h-11 bg-pink-50 dark:bg-pink-950/20 text-pink-600 dark:text-pink-400 rounded-xl flex items-center justify-center mb-4 text-xl shadow-sm">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Calitatea Superioară</h4>
+                        <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Confirmă oficial faptul că programul creat livrează valoarea promisă utilizatorului și funcționează perfect conform tuturor cerințelor stabilite inițial.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-slate-900 text-white rounded-2xl border border-slate-800 shadow-md relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl group-hover:scale-150 transition-all duration-500"></div>
+                    <h4 class="font-bold text-lg mb-3 flex items-center gap-2.5 text-amber-400 font-display">
+                        <i class="fas fa-radiation"></i> Studiu de caz istoric: Racheta Ariane 5
+                    </h4>
+                    <p class="text-sm md:text-base text-slate-300 leading-relaxed italic">
+                        "În anul 1996, racheta europeană Ariane 5 a explodat la doar 37 de secunde de la lansarea sa pe orbită. Cauza principală a fost un simplu bug de conversie a datelor din cod, nesupus unei testări adecvate, care a dus la o pagubă uriașă de peste 370 de milioane de dolari."
+                    </p>
+                </div>
+
+                <div class="flex justify-between pt-8 border-t border-slate-100 dark:border-darkborder">
+                    <button onclick="showSection('intro')" class="px-5 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Înapoi
+                    </button>
+                    <button onclick="showSection('sdlc')" class="next-section-btn px-6 py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold flex items-center gap-2.5 group transition-all shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30">
+                        Pasul Următor: Ciclul SDLC <i class="fas fa-arrow-right group-hover:translate-x-1.5 transition-transform"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section: SDLC -->
+            <section id="sdlc" class="content-section space-y-8">
+                <div class="space-y-3">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight font-display">
+                        SDLC (Software Development Life Cycle)
+                    </h2>
+                    <div class="w-20 h-1.5 bg-gradient-to-r from-brand-500 to-indigo-600 rounded-full"></div>
+                </div>
+                
+                <p class="text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl">
+                    SDLC reprezintă procesul structurat prin care o echipă de dezvoltare planifică, concepe, programează și lansează o aplicație de înaltă calitate.
+                </p>
+                
+                <!-- SDLC Timeline Vertical -->
+                <div class="relative pl-6 md:pl-10 space-y-8 py-2">
+                    
+                    <!-- Item 1 -->
+                    <div class="relative timeline-line flex flex-col md:flex-row gap-4 md:gap-8 items-start group">
+                        <div class="absolute -left-6 md:-left-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-base flex items-center justify-center border-4 border-slate-50 dark:border-darkbg group-hover:border-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-all z-10 shadow-sm">
+                            1
+                        </div>
+                        <div class="bg-white dark:bg-darkcard p-5 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex-1 group-hover:shadow-md transition-all duration-300">
+                            <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Analiza Cerințelor (Requirements gathering)</h4>
+                            <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Colectarea tuturor detaliilor și specificațiilor funcționale de la stakeholderi pentru a defini exact ce anume trebuie să realizeze aplicația software.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="relative timeline-line flex flex-col md:flex-row gap-4 md:gap-8 items-start group">
+                        <div class="absolute -left-6 md:-left-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-base flex items-center justify-center border-4 border-slate-50 dark:border-darkbg group-hover:border-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-all z-10 shadow-sm">
+                            2
+                        </div>
+                        <div class="bg-white dark:bg-darkcard p-5 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex-1 group-hover:shadow-md transition-all duration-300">
+                            <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Proiectare & Design</h4>
+                            <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Stabilirea arhitecturii tehnice, a bazei de date și crearea designului vizual (UI/UX) pe baza documentului de cerințe finalizat.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="relative timeline-line flex flex-col md:flex-row gap-4 md:gap-8 items-start group">
+                        <div class="absolute -left-6 md:-left-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-base flex items-center justify-center border-4 border-slate-50 dark:border-darkbg group-hover:border-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-all z-10 shadow-sm">
+                            3
+                        </div>
+                        <div class="bg-white dark:bg-darkcard p-5 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex-1 group-hover:shadow-md transition-all duration-300">
+                            <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Dezvoltare (Coding / Implementation)</h4>
+                            <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Scrierea efectivă a codului sursă de către echipa de programatori conform ghidurilor de design tehnic stabilite în etapa precedentă.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Item 4 (Highlight core testing focus) -->
+                    <div class="relative timeline-line flex flex-col md:flex-row gap-4 md:gap-8 items-start group">
+                        <div class="absolute -left-6 md:-left-10 w-10 h-10 rounded-full bg-brand-500 text-white font-bold text-base flex items-center justify-center border-4 border-brand-100 dark:border-brand-900 transition-all z-10 shadow-md shadow-brand-500/20">
+                            4
+                        </div>
+                        <div class="bg-brand-50/40 dark:bg-brand-950/10 p-5 rounded-2xl border-2 border-brand-500/50 dark:border-brand-500/30 shadow-md flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-0.5 text-xs font-bold bg-brand-500 text-white rounded-md uppercase">Core</span>
+                                <h4 class="font-extrabold text-lg text-slate-900 dark:text-white">Testare (Testing Phase)</h4>
+                            </div>
+                            <p class="text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                                Verificarea calității codului, identificarea tuturor defectelor, raportarea acestora de către QA și remedierea lor de către dezvoltatori înainte de livrare.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Item 5 -->
+                    <div class="relative timeline-line-last flex flex-col md:flex-row gap-4 md:gap-8 items-start group">
+                        <div class="absolute -left-6 md:-left-10 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-base flex items-center justify-center border-4 border-slate-50 dark:border-darkbg group-hover:border-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-all z-10 shadow-sm">
+                            5
+                        </div>
+                        <div class="bg-white dark:bg-darkcard p-5 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex-1 group-hover:shadow-md transition-all duration-300">
+                            <h4 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Implementare & Mentenanță</h4>
+                            <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Lansarea oficială a aplicației în producție pentru utilizatori și monitorizarea constantă a performanței, oferind actualizări periodice.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flex justify-between pt-8 border-t border-slate-100 dark:border-darkborder">
+                    <button onclick="showSection('importance')" class="px-5 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Înapoi
+                    </button>
+                    <button onclick="showSection('stlc')" class="next-section-btn px-6 py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold flex items-center gap-2.5 group transition-all shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30">
+                        Pasul Următor: Ciclul STLC <i class="fas fa-arrow-right group-hover:translate-x-1.5 transition-transform"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section: STLC -->
+            <section id="stlc" class="content-section space-y-8">
+                <div class="space-y-3">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight font-display">
+                        STLC (Software Testing Life Cycle)
+                    </h2>
+                    <div class="w-20 h-1.5 bg-gradient-to-r from-brand-500 to-indigo-600 rounded-full"></div>
+                </div>
+                
+                <p class="text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl">
+                    STLC reprezintă o serie de activități specifice desfășurate de o echipă profesionistă de Quality Assurance (QA) pentru a garanta nivelul optim de calitate al software-ului.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Step 1 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex items-start gap-4 hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:shadow-md transition-all duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xl shrink-0 group-hover:bg-brand-500 group-hover:text-white transition-colors shadow-sm">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-base md:text-lg text-slate-900 dark:text-white mb-1.5">1. Requirement Analysis</h4>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Echipa de QA analizează specificațiile scrise de Product Owneri pentru a identifica inconsistențele logice și a evalua cerințele din punct de vedere al testabilității.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex items-start gap-4 hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:shadow-md transition-all duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xl shrink-0 group-hover:bg-brand-500 group-hover:text-white transition-colors shadow-sm">
+                            <i class="fas fa-map"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-base md:text-lg text-slate-900 dark:text-white mb-1.5">2. Test Planning</h4>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Se definește Strategia de Testare (Test Strategy) și Planul de Testare (Test Plan) care specifică resursele implicate, instrumentele folosite și riscurile posibile.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex items-start gap-4 hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:shadow-md transition-all duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xl shrink-0 group-hover:bg-brand-500 group-hover:text-white transition-colors shadow-sm">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-base md:text-lg text-slate-900 dark:text-white mb-1.5">3. Test Case Development</h4>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Crearea efectivă a pașilor de testare detaliați (Test Cases) în platforme precum Jira sau TestRail, definind totodată și seturile de date folosite.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex items-start gap-4 hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:shadow-md transition-all duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xl shrink-0 group-hover:bg-brand-500 group-hover:text-white transition-colors shadow-sm">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-base md:text-lg text-slate-900 dark:text-white mb-1.5">4. Environment Setup</h4>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Pregătirea mediului fizic și virtual în care se va desfășura testarea (baze de date, servere dedicate de testare, instalarea aplicațiilor pe terminale mobile).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex items-start gap-4 hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:shadow-md transition-all duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xl shrink-0 group-hover:bg-brand-500 group-hover:text-white transition-colors shadow-sm">
+                            <i class="fas fa-vial"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-base md:text-lg text-slate-900 dark:text-white mb-1.5">5. Test Execution</h4>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Rularea efectivă a pașilor de testare stabiliți. Se raportează bug-urile găsite, urmând ca după corectarea lor să se facă re-testarea codului (Re-testing).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 6 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm flex items-start gap-4 hover:border-brand-500/30 dark:hover:border-brand-500/30 hover:shadow-md transition-all duration-300 group">
+                        <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-slate-800 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xl shrink-0 group-hover:bg-brand-500 group-hover:text-white transition-colors shadow-sm">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-base md:text-lg text-slate-900 dark:text-white mb-1.5">6. Test Cycle Closure</h4>
+                            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Analizarea completă a întregului proces de testare, stabilirea metricilor, completarea raportului final (Test Summary Report) și închiderea oficială a ciclului de test.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-8 border-t border-slate-100 dark:border-darkborder">
+                    <button onclick="showSection('sdlc')" class="px-5 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Înapoi
+                    </button>
+                    <button onclick="showSection('comparison')" class="next-section-btn px-6 py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold flex items-center gap-2.5 group transition-all shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30">
+                        Pasul Următor: SDLC vs STLC <i class="fas fa-arrow-right group-hover:translate-x-1.5 transition-transform"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section: SDLC vs STLC Comparison -->
+            <section id="comparison" class="content-section space-y-8">
+                <div class="space-y-3">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight font-display">
+                        SDLC vs STLC: Diferențe Cheie
+                    </h2>
+                    <div class="w-20 h-1.5 bg-gradient-to-r from-brand-500 to-indigo-600 rounded-full"></div>
+                </div>
+                
+                <p class="text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl">
+                    Deși sunt profund interconectate, SDLC și STLC au perspective și procese specifice diferite. STLC acționează ca un sub-ciclul vital, perfect integrat în cadrul SDLC general.
+                </p>
+                
+                <div class="overflow-x-auto bg-white dark:bg-darkcard rounded-2xl border border-slate-100 dark:border-darkborder shadow-md">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-darkborder">
+                                <th class="p-4 md:p-5 font-extrabold text-slate-700 dark:text-slate-300 font-display text-sm md:text-base">Criteriu de comparație</th>
+                                <th class="p-4 md:p-5 font-extrabold text-brand-600 dark:text-brand-400 font-display text-sm md:text-base">SDLC (Dezvoltare Generală)</th>
+                                <th class="p-4 md:p-5 font-extrabold text-emerald-600 dark:text-emerald-400 font-display text-sm md:text-base">STLC (Procesul de QA)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-darkborder text-xs md:text-sm">
+                            <tr class="hover:bg-slate-55/20 dark:hover:bg-slate-800/10 transition-colors">
+                                <td class="p-4 md:p-5 font-bold text-slate-900 dark:text-white">Definiție de Bază</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Ciclul de viață general al construcției unui sistem software, cap-la-cap.</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Ciclul de viață specific activităților de testare și asigurare a calității.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-55/20 dark:hover:bg-slate-800/10 transition-colors">
+                                <td class="p-4 md:p-5 font-bold text-slate-900 dark:text-white">Obiectiv Principal</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Livrarea unei aplicații complete care să corespundă cerințelor de business.</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Verificarea performanței și depistarea din timp a tuturor bug-urilor posibile.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-55/20 dark:hover:bg-slate-800/10 transition-colors">
+                                <td class="p-4 md:p-5 font-bold text-slate-900 dark:text-white">Actori Implicați</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Designeri, Business Analysts, Project Manageri și Programatori.</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Exclusiv Testeri, Ingineri QA și Manageri de Testare.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-55/20 dark:hover:bg-slate-800/10 transition-colors">
+                                <td class="p-4 md:p-5 font-bold text-slate-900 dark:text-white">Momentul de Început</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Imediat după conceperea ideii de afaceri a proiectului.</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">De îndată ce specificațiile inițiale pot fi citite și analizate.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-55/20 dark:hover:bg-slate-800/10 transition-colors">
+                                <td class="p-4 md:p-5 font-bold text-slate-900 dark:text-white">Livrabile Principale</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Design de arhitectură, codul sursă compilat, versiunea finală a aplicației.</td>
+                                <td class="p-4 md:p-5 text-slate-600 dark:text-slate-300 leading-relaxed">Test Cases, rapoarte de erori depistate, Test Summary Report final.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-5 bg-brand-50/50 dark:bg-indigo-950/15 border-l-4 border-brand-500 rounded-r-xl">
+                    <p class="text-sm text-brand-800 dark:text-brand-300 leading-relaxed">
+                        <strong class="font-bold">Sfat practic:</strong> Nu este posibilă o organizare corectă a STLC fără un flux de dezvoltare general SDLC bine structurat. QA-ul acționează ca un consultant critic la fiecare pas.
+                    </p>
+                </div>
+
+                <div class="flex justify-between pt-8 border-t border-slate-100 dark:border-darkborder">
+                    <button onclick="showSection('stlc')" class="px-5 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Înapoi
+                    </button>
+                    <button onclick="showSection('principles')" class="next-section-btn px-6 py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold flex items-center gap-2.5 group transition-all shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30">
+                        Pasul Următor: Cele 7 Principii <i class="fas fa-arrow-right group-hover:translate-x-1.5 transition-transform"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section: 7 Principles -->
+            <section id="principles" class="content-section space-y-8">
+                <div class="space-y-3">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight font-display">
+                        Cele 7 Principii Fundamentale ale Testării
+                    </h2>
+                    <div class="w-20 h-1.5 bg-gradient-to-r from-brand-500 to-indigo-600 rounded-full"></div>
+                </div>
+                
+                <p class="text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl">
+                    Aceste principii definesc codul etic și regulile logice fundamentale pe care se bazează întreaga strategie modernă de testare software.
+                </p>
+                
+                <div class="grid grid-cols-1 gap-6 mt-4">
+                    
+                    <!-- Principle 1 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl md:text-4xl font-black text-brand-100 dark:text-slate-800">01</span>
+                            <h4 class="font-bold text-base md:text-lg text-slate-900 dark:text-white">Testarea arată prezența defectelor, nu absența lor</h4>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-350 text-sm md:text-base leading-relaxed">
+                            Procesul de testare demonstrează cu siguranță că un software are erori, însă nu poate aduce vreodată o garanție matematică de 100% că produsul final este lipsit complet de alte defecte ascunse.
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="toggleExample(1)" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold text-xs md:text-sm flex items-center gap-1.5 focus:outline-none">
+                                <span>Vezi Exemplul Practic</span>
+                                <i id="ex-icon-1" class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                            </button>
+                            <div id="ex-box-1" class="hidden mt-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-brand-500 rounded-r-xl text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-all">
+                                <strong>Exemplu:</strong> Chiar dacă ai rulat 500 de teste distincte de funcționalitate și toate au statutul "Pass", acest lucru nu garantează absența totală a unui bug într-un scenariu rar, neprevăzut încă.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Principle 2 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl md:text-4xl font-black text-brand-100 dark:text-slate-800">02</span>
+                            <h4 class="font-bold text-base md:text-lg text-slate-900 dark:text-white">Testarea exhaustivă este imposibilă</h4>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-350 text-sm md:text-base leading-relaxed">
+                            Testarea tuturor combinațiilor posibile de date de intrare și precondiții nu este realizabilă în realitate din cauza resurselor, complexității și a timpului fizic nelimitat pe care l-ar necesita.
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="toggleExample(2)" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold text-xs md:text-sm flex items-center gap-1.5 focus:outline-none">
+                                <span>Vezi Exemplul Practic</span>
+                                <i id="ex-icon-2" class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                            </button>
+                            <div id="ex-box-2" class="hidden mt-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-brand-500 rounded-r-xl text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-all">
+                                <strong>Exemplu:</strong> Un simplu câmp de parolă care acceptă între 8 și 12 caractere are miliarde de combinații potențiale. Strategia QA se orientează deci pe scenariile cele mai critice.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Principle 3 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl md:text-4xl font-black text-brand-100 dark:text-slate-800">03</span>
+                            <h4 class="font-bold text-base md:text-lg text-slate-900 dark:text-white">Testarea timpurie (Early Testing)</h4>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-355 text-sm md:text-base leading-relaxed">
+                            Pentru un cost minim, testarea trebuie să înceapă din primele clipe ale SDLC, direct din analiza documentelor de business, înainte de scrierea propriu-zisă a liniilor de cod.
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="toggleExample(3)" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold text-xs md:text-sm flex items-center gap-1.5 focus:outline-none">
+                                <span>Vezi Exemplul Practic</span>
+                                <i id="ex-icon-3" class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                            </button>
+                            <div id="ex-box-3" class="hidden mt-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-brand-500 rounded-r-xl text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-all">
+                                <strong>Exemplu:</strong> Identificarea și eliminarea unei greșeli logice în faza de document de cerințe costă de peste 10-100 de ori mai puțin comparativ cu remedierea aceluiași defect descoperit direct în producție.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Principle 4 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl md:text-4xl font-black text-brand-100 dark:text-slate-800">04</span>
+                            <h4 class="font-bold text-base md:text-lg text-slate-900 dark:text-white">Gruparea defectelor (Defect Clustering)</h4>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-355 text-sm md:text-base leading-relaxed">
+                            De cele mai multe ori, majoritatea defectelor dintr-o aplicație se concentrează într-un număr foarte mic de module complexe. Aceasta este corelația directă cu principiul Pareto (regula 80/20).
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="toggleExample(4)" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold text-xs md:text-sm flex items-center gap-1.5 focus:outline-none">
+                                <span>Vezi Exemplul Practic</span>
+                                <i id="ex-icon-4" class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                            </button>
+                            <div id="ex-box-4" class="hidden mt-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-brand-500 rounded-r-xl text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-all">
+                                <strong>Exemplu:</strong> În cadrul unui magazin online complex, modulul de procesare al plăților virtuale și calculul taxelor fiscale adună, de regulă, 80% dintre bug-urile critice semnalate.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Principle 5 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl md:text-4xl font-black text-brand-100 dark:text-slate-800">05</span>
+                            <h4 class="font-bold text-base md:text-lg text-slate-900 dark:text-white">Paradoxul pesticidului</h4>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-355 text-sm md:text-base leading-relaxed">
+                            Dacă aceleași teste sunt rulate periodic la nesfârșit, ele vor înceta să mai descopere erori noi, deoarece codul se imunizează la seturile vechi de teste. Cazul necesită actualizarea constantă a seturilor de scenarii.
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="toggleExample(5)" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold text-xs md:text-sm flex items-center gap-1.5 focus:outline-none">
+                                <span>Vezi Exemplul Practic</span>
+                                <i id="ex-icon-5" class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                            </button>
+                            <div id="ex-box-5" class="hidden mt-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-brand-500 rounded-r-xl text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-all">
+                                <strong>Exemplu:</strong> Rulând neschimbat timp de un an doar scenariul de autentificare, vei ști că el funcționează, dar nu vei afla niciodată dacă s-au generat bug-uri în noul modul de tranzacții.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Principle 6 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl md:text-4xl font-black text-brand-100 dark:text-slate-800">06</span>
+                            <h4 class="font-bold text-base md:text-lg text-slate-900 dark:text-white">Testarea depinde de context</h4>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-355 text-sm md:text-base leading-relaxed">
+                            Modul de testare și energia acordată diferă total de la o aplicație la alta. Contextul dictează prioritățile și riscurile investigate.
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="toggleExample(6)" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold text-xs md:text-sm flex items-center gap-1.5 focus:outline-none">
+                                <span>Vezi Exemplul Practic</span>
+                                <i id="ex-icon-6" class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                            </button>
+                            <div id="ex-box-6" class="hidden mt-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-brand-500 rounded-r-xl text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-all">
+                                <strong>Exemplu:</strong> O aplicație mobilă pentru gaming se va testa axându-se pe grafică și divertisment, pe când un soft medical de cardiologie se va testa cu zero toleranță la precizie și siguranță.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Principle 7 -->
+                    <div class="bg-white dark:bg-darkcard p-6 rounded-2xl border border-slate-100 dark:border-darkborder shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-3xl md:text-4xl font-black text-brand-100 dark:text-slate-800">07</span>
+                            <h4 class="font-bold text-base md:text-lg text-slate-900 dark:text-white">Iluzia absenței defectelor</h4>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-355 text-sm md:text-base leading-relaxed">
+                            Repararea tuturor erorilor tehnice raportate este lipsită de sens în realitate dacă sistemul final dezvoltat rămâne greoi sau nu corespunde nevoilor efective ale utilizatorilor de business.
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="toggleExample(7)" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 font-semibold text-xs md:text-sm flex items-center gap-1.5 focus:outline-none">
+                                <span>Vezi Exemplul Practic</span>
+                                <i id="ex-icon-7" class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                            </button>
+                            <div id="ex-box-7" class="hidden mt-3 p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-brand-500 rounded-r-xl text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-all">
+                                <strong>Exemplu:</strong> Un software de e-commerce poate funcționa tehnic ireproșabil, însă dacă utilizatorilor le este extrem de greu să descopere unde se află coșul de cumpărături, proiectul este un eșec total.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-8 border-t border-slate-100 dark:border-darkborder">
+                    <button onclick="showSection('comparison')" class="px-5 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Înapoi
+                    </button>
+                    <button onclick="showSection('quiz')" class="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center gap-2.5 group transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30">
+                        Pornește Quiz-ul de Evaluare <i class="fas fa-rocket group-hover:translate-x-1.5 transition-transform"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section: Quiz -->
+            <section id="quiz" class="content-section space-y-8">
+                <div class="text-center space-y-3">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight font-display">
+                        Evaluare Cunoștințe
+                    </h2>
+                    <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+                        Validează nivelul cunoștințelor asimilate pe parcursul acestui curs printr-un quiz interactiv cu explicații imediate.
+                    </p>
+                    <div class="w-20 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mx-auto"></div>
+                </div>
+
+                <div id="quiz-container" class="bg-white dark:bg-darkcard p-6 md:p-8 rounded-2xl shadow-xl border border-slate-100 dark:border-darkborder max-w-2xl mx-auto relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 w-28 h-28 bg-emerald-500/5 rounded-full blur-xl"></div>
+                    
+                    <div id="question-box" class="space-y-6">
+                        <!-- Dynamic Content -->
+                    </div>
+
+                    <!-- Explanation Box -->
+                    <div id="explanation-box" class="hidden mt-6 p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-950 dark:text-indigo-200 border-l-4 border-brand-500 text-xs md:text-sm leading-relaxed transition-all">
+                        <h5 class="font-bold flex items-center gap-2 mb-1">
+                            <i class="fas fa-lightbulb text-brand-500"></i> Explicarea răspunsului:
+                        </h5>
+                        <p id="explanation-text"></p>
+                    </div>
+
+                    <div id="quiz-actions" class="hidden mt-6 flex justify-end">
+                        <button id="next-btn" onclick="goToNextQuestion()" class="px-6 py-3.5 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-all flex items-center gap-2 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30">
+                            Următoarea Întrebare <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Result Box -->
+                    <div id="result-box" class="hidden text-center space-y-6 py-8">
+                        <div class="inline-flex items-center justify-center w-24 h-24 bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 rounded-full mb-4 shadow-sm border border-brand-100/50 dark:border-brand-900/30">
+                            <i class="fas fa-trophy text-4xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white font-display">Felicitări! Ai finalizat evaluarea.</h3>
+                        
+                        <div class="max-w-xs mx-auto p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                            <p class="text-slate-400 uppercase text-xs font-bold tracking-widest mb-1.5">Scorul tău este</p>
+                            <p id="score-text" class="text-5xl font-black text-brand-600 dark:text-brand-400">0/10</p>
+                        </div>
+                        
+                        <p id="feedback-message" class="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed font-medium">
+                            <!-- Custom feedback message dynamically inserted -->
+                        </p>
+                        
+                        <div class="pt-4">
+                            <button onclick="resetQuiz()" class="px-8 py-3.5 bg-slate-900 dark:bg-slate-800 text-white rounded-xl hover:bg-slate-850 dark:hover:bg-slate-700 transition-all font-bold shadow-md">
+                                Reîncepe Quiz-ul
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Light-weight Canvas Confetti Script -->
+    <script>
+        function launchConfetti() {
+            const canvas = document.createElement('canvas');
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '9999';
+            canvas.id = 'confetti-canvas';
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const colors = ['#6366f1', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+            const particles = [];
+
+            for (let i = 0; i < 120; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 6 + 4,
+                    d: Math.random() * canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10 - 5,
+                    tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                    tiltAngle: 0
+                });
+            }
+
+            let animationId;
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let finished = true;
+                particles.forEach(p => {
+                    p.tiltAngle += p.tiltAngleIncremental;
+                    p.y += (Math.cos(p.tiltAngle) + 3 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle);
+                    p.tilt = Math.sin(p.tiltAngle - p.r/2) * 15;
+
+                    if (p.y < canvas.height) finished = false;
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r/2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r/2);
+                    ctx.stroke();
+                });
+
+                if (finished) {
+                    cancelAnimationFrame(animationId);
+                    canvas.remove();
+                } else {
+                    animationId = requestAnimationFrame(draw);
+                }
+            }
+            draw();
+            setTimeout(() => {
+                cancelAnimationFrame(animationId);
+                canvas.remove();
+            }, 6000);
+        }
+    </script>
+
+    <!-- General Navigation & Interactive Page Mechanics -->
+    <script>
+        const sectionsList = ['intro', 'importance', 'sdlc', 'stlc', 'comparison', 'principles', 'quiz'];
+        let maxVisitedIndex = 0;
+
+        function updateReadingProgress(sectionId) {
+            const index = sectionsList.indexOf(sectionId);
+            if (index > maxVisitedIndex) {
+                maxVisitedIndex = index;
+            }
+            const progressPct = ((maxVisitedIndex + 1) / sectionsList.length) * 100;
+            document.getElementById('reading-progress').style.width = `${progressPct}%`;
+        }
+
+        function showSection(sectionId) {
+            // Close mobile menu if open
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (!drawer.classList.contains('-translate-x-full')) {
+                drawer.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+                backdrop.classList.remove('opacity-100');
+            }
+
+            // Deactivate old sections and activate the new one
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const targetSection = document.getElementById(sectionId);
+            targetSection.classList.add('active');
+            
+            // Sync desktop & mobile navigation links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+                if(link.getAttribute('onclick').includes(`'${sectionId}'`)) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Update Progress bar
+            updateReadingProgress(sectionId);
+            
+            // Scroll smoothly to top of content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if(sectionId === 'quiz') {
+                resetQuiz();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (drawer.classList.contains('-translate-x-full')) {
+                drawer.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+                setTimeout(() => {
+                    backdrop.classList.add('opacity-100');
+                }, 20);
+            } else {
+                drawer.classList.add('-translate-x-full');
+                backdrop.classList.remove('opacity-100');
+                setTimeout(() => {
+                    backdrop.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        function toggleExample(id) {
+            const exBox = document.getElementById(`ex-box-${id}`);
+            const exIcon = document.getElementById(`ex-icon-${id}`);
+            if (exBox.classList.contains('hidden')) {
+                exBox.classList.remove('hidden');
+                exIcon.classList.remove('fa-chevron-down');
+                exIcon.classList.add('fa-chevron-up');
+            } else {
+                exBox.classList.add('hidden');
+                exIcon.classList.remove('fa-chevron-up');
+                exIcon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // Dark Mode switch mechanic
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Apply dark theme on load if saved
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Quiz Engine Script -->
+    <script>
+        const quizData = [
+            {
+                q: "Care este scopul principal al testării software?",
+                a: ["Să demonstreze că nu există bug-uri.", "Să identifice defecte și să crească încrederea în calitatea produsului.", "Să scrie cod.", "Să întârzie lansarea."],
+                correct: 1,
+                explanation: "Scopul testării este să identifice defectele cât mai devreme pentru a reduce costurile de reparație și a ridica nivelul calitativ al produsului final, confirmând comportamentul real în raport cu cel dorit."
+            },
+            {
+                q: "În ce etapă a SDLC începe de obicei testarea propriu-zisă a codului?",
+                a: ["Analiza Cerințelor", "Design", "Testing Phase (după Coding)", "Mentenanță"],
+                correct: 2,
+                explanation: "Deși planificarea și testarea cerințelor încep devreme, rularea propriu-zisă a testelor dinamice se face după ce codul a fost dezvoltat de programatori."
+            },
+            {
+                q: "Care etapă STLC se ocupă cu scrierea test case-urilor?",
+                a: ["Test Execution", "Requirement Analysis", "Test Case Development", "Environment Setup"],
+                correct: 2,
+                explanation: "În etapa de 'Test Case Development' se scriu scenariile pas-cu-pas, seturile de date de test și se pregătește documentația principală de testare."
+            },
+            {
+                q: "Ce afirmă 'Paradoxul Pesticidului'?",
+                a: ["Găsirea unui bug duce mereu la altul.", "Testarea trebuie făcută doar la final.", "Aceleași teste rulate repetat nu vor mai găsi bug-uri noi.", "Testarea este dăunătoare codului."],
+                correct: 2,
+                explanation: "Dacă seturile de teste sunt rulate periodic la nesfârșit fără modificări, ele devin ineficiente în depistarea erorilor noi, deoarece codul se modifică în alte module noi nesurprinse."
+            },
+            {
+                q: "Ce înseamnă 'Testarea depinde de context'?",
+                a: ["Se testează doar pe computerul testerului.", "Software-ul se testează doar online.", "Strategia diferă în funcție de tipul aplicației.", "Toate aplicațiile se testează identic."],
+                correct: 2,
+                explanation: "Fiecare aplicație are priorități și tipologii diferite. Un joc pe mobil pune accent pe grafică și divertisment, pe când un software medical se concentrează 100% pe securitate și precizie."
+            },
+            {
+                q: "Ce este 'Early Testing'?",
+                a: ["Testarea imediat după codare.", "Începerea testării cât mai devreme în SDLC.", "Testarea dimineața.", "Testarea de către manageri."],
+                correct: 1,
+                explanation: "Testarea timpurie reprezintă implicarea echipei de QA în analiza specificațiilor inițiale de business pentru a prinde erorile logice înainte ca ele să fie efectiv programate."
+            },
+            {
+                q: "Ce presupune 'Defect Clustering'?",
+                a: ["Bug-urile sunt peste tot.", "Majoritatea defectelor se află într-un număr mic de module.", "Toate defectele trebuie puse într-un Excel.", "Gruparea testerilor în echipe."],
+                correct: 1,
+                explanation: "Conform principiului Pareto (regula 80/20), aproximativ 80% din defecte sunt concentrate în doar 20% din modulele aplicației (care sunt, de obicei, cele mai complexe)."
+            },
+            {
+                q: "Care este ultima etapă din STLC?",
+                a: ["Execution", "Bug Reporting", "Test Cycle Closure", "Planning"],
+                correct: 2,
+                explanation: "Ultima etapă din STLC este 'Test Cycle Closure', în care echipa de testare evaluează metricile finale obținute, completează raportul final și arhivează datele de test."
+            },
+            {
+                q: "Cine este responsabil de etapa de 'Design' în SDLC?",
+                a: ["Testerii", "Arhitecții și Designerii UI/UX", "Clienții", "Resursele Umane"],
+                correct: 1,
+                explanation: "Arhitecții de sistem și designerii de UI/UX definesc structura tehnică a codului, arhitectura bazei de date și aspectul vizual înainte de începerea programării."
+            },
+            {
+                q: "Ce înseamnă 'Eroarea absenței erorilor'?",
+                a: ["Sistemul este perfect.", "Fără bug-uri sistemul este garantat util.", "Repararea bug-urilor nu ajută dacă sistemul nu este utilizabil.", "Testerii au greșit."],
+                correct: 2,
+                explanation: "Repararea tuturor erorilor logice și de cod este absolut inutilă dacă aplicația construită nu corespunde nevoilor reale ale beneficiarilor sau este greu de navigat."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let canAnswer = true;
+
+        function loadQuestion() {
+            const questionBox = document.getElementById('question-box');
+            const explanationBox = document.getElementById('explanation-box');
+            const actions = document.getElementById('quiz-actions');
+            const data = quizData[currentQuestionIndex];
+            
+            canAnswer = true;
+            actions.classList.add('hidden');
+            explanationBox.classList.add('hidden');
+            
+            const progressPercentage = ((currentQuestionIndex + 1) / quizData.length) * 100;
+            
+            questionBox.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-xs md:text-sm">
+                        <span class="font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Întrebarea ${currentQuestionIndex + 1} din ${quizData.length}</span>
+                        <span class="font-semibold px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg">Scor: ${score}</span>
+                    </div>
+                    
+                    <!-- Horizontal Progress Indicator inside Card -->
+                    <div class="w-full bg-slate-100 dark:bg-slate-850 h-2 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-brand-500 to-indigo-600 transition-all duration-300" style="width: ${progressPercentage}%;"></div>
+                    </div>
+                    
+                    <h4 class="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white leading-snug pt-2">${data.q}</h4>
+                    
+                    <div id="options-grid" class="grid grid-cols-1 gap-3 pt-2">
+                        ${data.a.map((option, index) => `
+                            <button 
+                                id="opt-${index}" 
+                                onclick="handleAnswer(${index})" 
+                                class="option-btn text-left p-4 border-2 border-slate-100 dark:border-slate-800 rounded-xl transition-all duration-200 focus:outline-none flex justify-between items-center group font-medium text-xs md:text-sm"
+                            >
+                                <span>${option}</span>
+                                <i class="status-icon fas hidden text-lg"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleAnswer(selectedIndex) {
+            if (!canAnswer) return;
+            canAnswer = false;
+
+            const data = quizData[currentQuestionIndex];
+            const isCorrect = selectedIndex === data.correct;
+            
+            if (isCorrect) {
+                score++;
+            }
+
+            // Visual feedback
+            data.a.forEach((_, index) => {
+                const btn = document.getElementById(`opt-${index}`);
+                const icon = btn.querySelector('.status-icon');
+                btn.classList.remove('hover:border-brand-500', 'hover:bg-brand-50/30');
+                
+                if (index === selectedIndex) {
+                    if (isCorrect) {
+                        btn.classList.add('border-emerald-500', 'bg-emerald-50/50', 'dark:bg-emerald-950/20', 'text-emerald-700', 'dark:text-emerald-400');
+                        icon.classList.remove('hidden');
+                        icon.classList.add('fa-check-circle', 'text-emerald-500');
+                    } else {
+                        btn.classList.add('border-rose-500', 'bg-rose-50/50', 'dark:bg-rose-950/20', 'text-rose-700', 'dark:text-rose-400');
+                        icon.classList.remove('hidden');
+                        icon.classList.add('fa-times-circle', 'text-rose-500');
+                    }
+                } else {
+                    btn.classList.add('opacity-40');
+                }
+                
+                // Show the correct answer as well (softly) if user got it wrong
+                if (!isCorrect && index === data.correct) {
+                    btn.classList.remove('opacity-40');
+                    btn.classList.add('border-emerald-500/60', 'text-emerald-600', 'dark:text-emerald-400');
+                }
+                
+                btn.style.cursor = 'default';
+            });
+
+            // Display explanations
+            const explanationText = document.getElementById('explanation-text');
+            const explanationBox = document.getElementById('explanation-box');
+            explanationText.innerText = data.explanation;
+            explanationBox.classList.remove('hidden');
+
+            document.getElementById('quiz-actions').classList.remove('hidden');
+        }
+
+        function goToNextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('question-box').classList.add('hidden');
+            document.getElementById('explanation-box').classList.add('hidden');
+            document.getElementById('quiz-actions').classList.add('hidden');
+            document.getElementById('result-box').classList.remove('hidden');
+            
+            document.getElementById('score-text').innerText = `${score} / ${quizData.length}`;
+            
+            const feedbackMsg = document.getElementById('feedback-message');
+            if (score === 10) {
+                feedbackMsg.innerText = "Excelent! Ai răspuns corect la toate întrebările. Ești complet pregătit să activezi în domeniul testării software!";
+                launchConfetti();
+            } else if (score >= 7) {
+                feedbackMsg.innerText = "Foarte bine! Ai asimilat extrem de corect majoritatea conceptelor explicate în acest curs.";
+            } else if (score >= 5) {
+                feedbackMsg.innerText = "Bine, dar mai este loc de îmbunătățire. Îți recomandăm să recitești capitolele în care ai întâmpinat dificultăți.";
+            } else {
+                feedbackMsg.innerText = "Mai citește o dată capitolele cursului și reîncepe evaluarea. Sigur vei obține un scor mult mai bun!";
+            }
+        }
+
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('question-box').classList.remove('hidden');
+            document.getElementById('result-box').classList.add('hidden');
+            document.getElementById('explanation-box').classList.add('hidden');
+            document.getElementById('quiz-actions').classList.add('hidden');
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
